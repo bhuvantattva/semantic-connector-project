@@ -1,3 +1,5 @@
+services:
+
 mongo:
  image: mongo:4.4 
  container_name: mongo
