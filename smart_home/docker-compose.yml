@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+
+  mongo:
+    image: mongo:4.4
+    container_name: mongo
+    ports:
+      - "27017:27017"
+
+  orion:
+    image: fiware/orion-ld
+    container_name: orion
+    depends_on:
+      - mongo
+    command: -dbhost mongo
+    ports:
+      - "1026:1026"
