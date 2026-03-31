@@ -71,23 +71,19 @@ Streamlit Dashboard
 ## 📂 Project Structure
 
 ```
-smart_home_project/
-│
+semantic-connector-project/
+├── app.py
+├── semantic_connector.py
+├── delete_entities.py
 ├── docker-compose.yml
-│
-├── app.py                         # Streamlit dashboard
-├── semantic_connector.py          # Main pipeline (MySQL → Orion)
-├── delete_entities.py             # Deletes existing Orion entities
-│
+├── README.md
+├── requirements.txt
+├── .env.example
+├── .gitignore
 ├── database/
-│   └── schema.sql                 # MySQL table creation
-│
-├── data/
-│   └── sample_data.json           # Sample raw device data (if used)
-│
-├── requirements.txt               # Python dependencies
-│
-└── README.md
+│   └── schema.sql
+└── sample_data/
+    └── raw_data.sql
 ```
 
 ---
