@@ -1,221 +1,296 @@
 🏠 Smart Home Semantic Connector & Orion-LD Integration
 
-## 📌 Overview
+## Overview
 
-This project implements a **Semantic Connector pipeline** to standardize smart home IoT data and integrate it into **FIWARE Orion-LD** using NGSI-LD.
+This project demonstrates a **Semantic Connector** that transforms heterogeneous smart home device data into a standardized format using **NGSI-LD** and publishes it to a **FIWARE Orion-LD Context Broker**.
 
-The system converts raw device data into a structured format, enabling interoperability and real-time visualization.
+The system integrates:
 
----
-
-## 🚨 Problem Statement
-
-Smart home devices generate data in inconsistent formats:
-
-* Different units and structures
-* No common schema
-* Difficult integration
-
-### Examples
-
-* Temperature → `"22°C"`
-* Power → `"2300W"`
+* MySQL (raw + processed data)
+* Python (data transformation & semantic mapping)
+* Orion-LD (context broker)
+* MongoDB (backend for Orion)
+* Streamlit (dashboard visualization)
 
 ---
 
-## 🎯 Objective
+## Architecture
 
-* Standardize IoT device data
-* Convert raw data into NGSI-LD entities
-* Integrate with Orion-LD
-* Enable real-time visualization
-
----
-
-## 🏗️ Architecture
-
-```
-IoT Devices
-   ↓
+```text
 MySQL (Raw Data)
-   ↓
+        ↓
 Semantic Connector (Python)
-   ↓
-MySQL (Processed Data)
-   ↓
-Orion-LD (Docker + MongoDB)
-   ↓
+        ↓
+NGSI-LD Entities
+        ↓
+Orion-LD (Docker)
+        ↓
 Streamlit Dashboard
 ```
 
 ---
 
-## ⚙️ Tech Stack
+## Project Structure
 
-* Python
-* MySQL
-* MongoDB (Docker)
-* FIWARE Orion-LD (Docker)
-* NGSI-LD
-* Streamlit
-
----
-
-## 🐳 Docker Services
-
-* MongoDB (backend database for Orion-LD)
-* Orion-LD (context broker)
-
----
-
-## 📂 Project Structure
-
-```
+```text
 semantic-connector-project/
+│
 ├── app.py
 ├── semantic_connector.py
 ├── delete_entities.py
 ├── docker-compose.yml
-├── README.md
 ├── requirements.txt
-├── .env.example
-├── .gitignore
+├── README.md
+│
 ├── database/
 │   └── schema.sql
-└── sample_data/
-    └── raw_data.sql
+│
+├── sample_data/
+│   └── raw_data.sql
+│
+├── .env.example
+├── .gitignore
 ```
 
 ---
 
-## 🧠 Core Components
+## Technology Choices
 
-### Raw Data Table
+### Dataspace / Platform
 
-```sql
-CREATE TABLE raw_device_data_table (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    device_id VARCHAR(50),
-    device_type VARCHAR(50),
-    raw_payload JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+* FIWARE Orion-LD
+
+### Ontology
+
+* **SAREF (Smart Applications REFerence ontology)**
+* EU-compliant and suitable for smart energy systems
 
 ---
 
-### Processed Data Table
+## What is an Ontology?
 
-```sql
-CREATE TABLE processed_device_data (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    entity_id VARCHAR(100),
-    entity_type VARCHAR(50),
-    attribute_name VARCHAR(50),
-    attribute_value VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
----
-
-### Semantic Connector
-
-* Reads raw JSON data
-* Converts to NGSI-LD format
-* Sends data to Orion-LD
+An ontology defines a **standard structure and meaning of data**.
 
 Example:
 
+* Different devices → "temp", "temperature"
+* Standardized → `temperature` with unit `°C`
+
+---
+
+## Requirements
+
+### Software
+
+* Python 3.10+
+* Docker Desktop
+* MySQL Server
+* (Optional) MySQL Workbench
+
+---
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Environment Setup
+
+Create `.env` from `.env.example`:
+
+```env
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=smart_home
+
+ORION_URL=http://localhost:1026
+```
+
+---
+
+## Setup Instructions
+
+### 1. Clone Repo
+
+```bash
+git clone <repo-url>
+cd semantic-connector-project
+```
+
+---
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 3. Start Docker (MongoDB + Orion)
+
+```bash
+docker compose up -d
+```
+
+---
+
+### 4. Setup MySQL
+
+Run schema:
+
+```sql
+SOURCE database/schema.sql;
+```
+
+Insert data:
+
+```sql
+SOURCE sample_data/raw_data.sql;
+```
+
+---
+
+## ⚠️ IMPORTANT: Pipeline Mode (Very Important)
+
+Your pipeline has two modes controlled by:
+
 ```python
-entity = {
-    "id": f"urn:ngsi-ld:{row['device_type']}:{row['device_id']}",
-    "type": row['device_type'],
-    "@context": [
-        "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
-    ]
-}
+USE_PROCESSED_AS_SOURCE = False
 ```
+
+### First Run (MANDATORY)
+
+Set:
+
+```python
+USE_PROCESSED_AS_SOURCE = False
+```
+
+### Why?
+
+* `processed_device_data` table is initially EMPTY
+* If set to True → no data will be processed
+* Result → Orion empty → dashboard blank
 
 ---
 
-### Orion-LD
+### After First Run
 
-* Stores NGSI-LD entities
-* Uses MongoDB internally
-* Provides REST API access
-
----
-
-### Streamlit Dashboard
-
-* Device selection
-* Data table view
-* Charts (Power, Temperature)
-* KPI metrics
-
----
-
-## 🔄 Pipeline Modes
-
-### Mode 1
-
-```
-Raw → Transform → Store → Orion
-```
-
-### Mode 2
-
-```
-Processed → Rebuild → Orion
-```
-
-Controlled using:
+You can switch to:
 
 ```python
 USE_PROCESSED_AS_SOURCE = True
 ```
 
----
+### Why?
 
-## 📊 Supported Devices
-
-* Smart Meter
-* Thermostat
-* EV Charger
-* Solar Inverter
-* Smart Light
-* Door Lock
-* Camera
-* Humidity Sensor
+* Uses already processed data
+* Faster execution
+* Avoids reprocessing raw data
 
 ---
 
-## ⚠️ Issues Handled
+### Summary
 
-### Port Conflict (MySQL)
-
-* Cause: Port 3306 already in use
-* Fix: Stop existing service or change port
-
----
-
-### Data Type Issues
-
-* Cause: Mixed values like `"22°C"`
-* Fix: Convert to numeric
-
-```python
-pd.to_numeric(..., errors="coerce")
+```text
+First run → False
+Later runs → True
 ```
 
 ---
 
-## 🔥 Features
+## Run the Project
 
-* NGSI-LD data standardization
-* Orion-LD integration
-* Lightweight Docker setup
-* Real-time dashboard
+### Step 1: Run Semantic Connector
+
+```bash
+python semantic_connector.py
+```
 
 ---
+
+### Step 2: (Optional) Clear Old Data
+
+```bash
+python delete_entities.py
+```
+
+---
+
+### Step 3: Run Dashboard
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Access
+
+| Service       | URL                   |
+| ------------- | --------------------- |
+| Orion-LD API  | http://localhost:1026 |
+| Streamlit App | http://localhost:8501 |
+
+---
+
+## Verify Data
+
+```bash
+curl -H "Accept: application/ld+json" \
+"http://localhost:1026/ngsi-ld/v1/entities"
+```
+
+---
+
+## Current Scope
+
+* Raw data ingestion (MySQL)
+* Transformation to NGSI-LD
+* Orion-LD integration
+* Dashboard visualization
+
+---
+
+## Future Improvements
+
+* Full SAREF ontology mapping
+* Automated pipeline (remove manual flag)
+* Advanced semantic enrichment
+* Better error handling
+
+---
+
+## Important Notes
+
+* MySQL runs locally (NOT Docker)
+* Docker is only for MongoDB + Orion
+* Run Python pipeline BEFORE dashboard
+* Ensure DB credentials match `.env`
+
+---
+
+## Common Issues
+
+### Empty dashboard
+
+→ You forgot to set:
+
+```python
+USE_PROCESSED_AS_SOURCE = False
+```
+
+### MySQL connection error
+
+→ Check credentials and server status
+
+### Orion not responding
+
+→ Ensure Docker is running
+
