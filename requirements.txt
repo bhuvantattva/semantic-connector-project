@@ -1,13 +1,8 @@
-Python Requirements (Use VS Code):
-
 mysql-connector-python
 pandas
 requests
 streamlit
 streamlit-autorefresh
 python-dotenv
-
-Install using:
-pip install -r requirements.txt
 
 
