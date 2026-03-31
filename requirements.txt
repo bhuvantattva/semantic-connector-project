@@ -1,0 +1,38 @@
+Python Requirements (Use VS Code):
+
+mysql-connector-python
+pandas
+requests
+streamlit
+streamlit-autorefresh
+python-dotenv
+
+Install using:
+pip install -r requirements.txt
+
+Docker Requirements
+MongoDB
+Orion-LD Context Broker
+
+Docker commands
+Start services: docker compose up -d
+Stop services: docker compose down
+Check running containers: docker ps
+
+MySQL Database Setup
+
+⚠️MySQL is NOT in Docker — it must run locally.
+
+Step 1: Start MySQL Server
+
+Ensure MySQL is running on:
+
+host: localhost
+port: 3306
+
+Create Database & Tables
+SOURCE schema.sql;
+
+Insert Sample Data
+SOURCE raw_data.sql;
+
