@@ -136,6 +136,10 @@ pip install -r requirements.txt
 
 ```bash
 docker compose up -d
+
+Check running containers:
+docker ps
+
 ```
 
 ---
@@ -207,29 +211,57 @@ Later runs → True
 
 ## Run the Project
 
-### Step 1: Run Semantic Connector
+## How to Run the Project
 
-```bash
+### 1. Install dependencies
+pip install -r requirements.txt
+
+### 2. Start Docker services
+docker compose up -d
+
+### 3. Setup MySQL
+Run:
+SOURCE database/schema.sql;
+SOURCE sample_data/raw_data.sql;
+
+---
+
+## First Run (MANDATORY)
+
+### 4. First run configuration
+Set:
+USE_PROCESSED_AS_SOURCE = False
+
+### 5. Run semantic connector
 python semantic_connector.py
-```
+
+👉 This will:
+- Read raw data from MySQL
+- Transform it into processed data
+- Send data to Orion-LD
 
 ---
 
-### Step 2: (Optional) Clear Old Data
+## Second Run (Optional / Faster)
 
-```bash
-python delete_entities.py
-```
+### 6. Second run configuration
+Set:
+USE_PROCESSED_AS_SOURCE = True
+
+### 7. Run semantic connector again
+python semantic_connector.py
+
+👉 This will:
+- Skip transformation step
+- Directly use processed data
+- Send data to Orion-LD faster
 
 ---
 
-### Step 3: Run Dashboard
+## Run Dashboard
 
-```bash
+### 8. Start Streamlit
 streamlit run app.py
-```
-
----
 
 ## Access
 
